@@ -24,33 +24,9 @@ const cors = require("cors")({
 
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const helpers = require("./functions-helpers.js");
+const utils = require("./utils.js");
 admin.initializeApp();
-
-let currentUserID = 0;
-
-// Using a monotonically increasing value for simplicity.
-// This makes fetching users to modify their scores later
-// easier, which is not a problem you will run into in a
-// real game.
-/**
- * Generates a new user ID.
- * @return {number} Returns a monotonically increasing integer.
- */
-function newUserID() {
-  const value = currentUserID;
-  currentUserID++;
-  return value;
-}
-
-// Arbitrarily decided score. Will have a roughly uniform distribution,
-// though in real games scores will almost never be evenly distributed.
-/**
- * Generates a random score.
- * @return {number} A score between 0 and 1000, including decimals.
- */
-function randomScore() {
-  return Math.random() * 1000;
-}
 
 // Deletes the first 1000 scores, for simplicity. Since collections are
 // unbounded, deleting is not trivial. See the docs for more details:
@@ -80,44 +56,58 @@ exports.deleteScores = functions.https.onRequest(async (req, res) => {
 // Adds 100 random scores.
 exports.addScores = functions.https.onRequest(async (req, res) => {
   cors(req, res, () => {
-    const collection = admin.firestore().collection("scores");
-    const bulkWriter = admin.firestore().bulkWriter();
     const scores = [];
     for (let i = 0; i < 100; i++) {
       scores.push({
-        user: newUserID(),
-        score: randomScore(),
+        user: utils.newUserID(),
+        score: utils.randomScore(),
       });
     }
     Promise.all(
         scores.map((score) => {
-          const doc = collection.doc();
-          return bulkWriter.create(doc, score);
+          helpers.createScore(
+              score.user,
+              score.score,
+              admin.firestore(),
+          );
         }),
-        bulkWriter.close(),
     ).then((results) => {
       res.json({
         result: "Added scores",
         writes: results,
       });
+      res.end();
     });
   });
 });
 
 exports.addScore = functions.https.onRequest(async (req, res) => {
   cors(req, res, () => {
-
+    const user = req.body.data.playerID;
+    const score = req.body.data.score;
+    helpers.createScore(user, score, admin.firestore()).then((result) => {
+      res.json({result: `Score created: ${result}`});
+    });
   });
 });
 
 exports.updateScore = functions.https.onRequest(async (req, res) => {
   cors(req, res, () => {
-
+    const user = req.body.data.playerID;
+    const score = req.body.data.newScore;
+    const firestore = admin.firestore();
+    helpers.updateScore(user, score, firestore).then((result) => {
+      res.json({result: `Update completed with result: ${result}`});
+    });
   });
 });
 
 exports.getRank = functions.https.onRequest(async (req, res) => {
   cors(req, res, () => {
-
+    const user = req.body.data.playerID;
+    const firestore = admin.firestore();
+    helpers.readRank(user, firestore).then((result) => {
+      res.json({result: `Rank: ${result.rank}`});
+    });
   });
 });

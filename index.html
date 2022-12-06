@@ -19,10 +19,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Firestore Leaderboard</title>
 
-  <!-- Disable tap highlight on IE -->
-  <meta name="msapplication-tap-highlight" content="no">
-  <link rel="icon" href="images/favicon.ico">
-
   <!-- Material Design Components -->
   <link rel="stylesheet"
   href="https://unpkg.com/material-components-web@14.0.0/dist/material-components-web.min.css">
@@ -33,24 +29,15 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link rel="stylesheet" href="/styles/main.css">
 </head>
-<body>
+<body class="mdc-typography">
 <div>
-
   <main>
-
-  <button class="mdc-button" id="count-button">
-    <span class="mdc-button__label">Fetch count</span>
-  </button>
-
-  <button class="mdc-button" id="add-scores">
-    <span class="mdc-button__label">Add 100 scores</span>
-  </button>
-
-  <button class="mdc-button" id="delete-scores">
-    <span class="mdc-button__label">Delete 1000 scores</span>
-  </button>
+    <h1 class="mdc-typography--headline3">
+      Welcome to the leaderboards codelab!
+        <a href="https://developer.chrome.com/docs/devtools/open/">
+          Open up Chrome DevTools to get started.</a>
+    </h1>
   </main>
-
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js" type="module"></script>
@@ -66,11 +53,5 @@ fetch('/__/firebase/init.json').then(async response => {
 </script>
 
 <script src="./scripts/leaderboard.js" type="module"></script>
-<script type="module">
-    import { fetchLeaderboardCount, addScores, deleteScores } from "./scripts/leaderboard.js";
-    document.querySelector('#count-button').addEventListener('click', fetchLeaderboardCount);
-    document.querySelector('#add-scores').addEventListener('click', addScores);
-    document.querySelector('#delete-scores').addEventListener('click', deleteScores);
-</script>
 </body>
 </html>

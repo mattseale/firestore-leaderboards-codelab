@@ -18,29 +18,59 @@
 import { getApp } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-app.js";
 import { getFirestore, collection, getCountFromServer } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-firestore.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-functions.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/9.14.0/firebase-auth.js";
 
 async function invokeFunctionCall(name) {
-    const functions = getFunctions();
-    const callable = httpsCallable(functions, name);
-    callable({})
-        .then((result) => {
-        console.log(result);
-    });
+  const functions = getFunctions();
+  const callable = httpsCallable(functions, name);
+  callable({})
+    .then((result) => {
+    console.log(result);
+  });
 }
 
 export async function fetchLeaderboardCount() {
-    const app = getApp();
-    const db = getFirestore(app);
-    const coll = collection(db, "scores");
-    const snapshot = await getCountFromServer(coll);
-    console.log('count: ', snapshot.data().count);
+  const app = getApp();
+  const db = getFirestore(app);
+  const coll = collection(db, "scores");
+  const snapshot = await getCountFromServer(coll);
+  console.log('count: ', snapshot.data().count);
 }
 
 export async function addScores() {
-    invokeFunctionCall("addScores");
+  invokeFunctionCall("addScores");
+}
+
+export async function addScore(user, score) {
+  const functions = getFunctions();
+  const callable = httpsCallable(functions, "addScore");
+  callable({playerID: user, score: score})
+    .then((result) => {
+    console.log(result);
+  });
 }
 
 export async function deleteScores() {
-    invokeFunctionCall("deleteScores");
+  invokeFunctionCall("deleteScores");
+}
+
+export async function getRank(user) {
+  const functions = getFunctions();
+  const callable = httpsCallable(functions, "getRank");
+  callable({playerID: user})
+    .then((result) => {
+    console.log(result);
+  });
+}
+
+export async function updateScore(user, score) {
+  const functions = getFunctions();
+  const callable = httpsCallable(functions, "updateScore");
+  callable({playerID: user, newScore: score})
+    .then((result) => {
+    console.log(result);
+  });
+}
+
+export function codelab() {
+  console.log("Welcome to the leaderboards codelab!");
 }
