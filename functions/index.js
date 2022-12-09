@@ -53,19 +53,21 @@ exports.deleteScores = functions.https.onRequest(async (req, res) => {
   });
 });
 
-// Adds 100 random scores.
+// Adds 10 random scores.
 exports.addScores = functions.https.onRequest(async (req, res) => {
   cors(req, res, () => {
     const scores = [];
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 10; i++) {
       scores.push({
         user: utils.newUserID(),
         score: utils.randomScore(),
       });
     }
+    // This is done synchronously to avoid lock contention when using
+    // transactions.
     Promise.all(
-        scores.map((score) => {
-          helpers.createScore(
+        scores.map(async (score) => {
+          await helpers.createScore(
               score.user,
               score.score,
               admin.firestore(),
