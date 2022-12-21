@@ -28,31 +28,6 @@ const helpers = require("./functions-helpers.js");
 const utils = require("./utils.js");
 admin.initializeApp();
 
-// Deletes the first 1000 scores, for simplicity. Since collections are
-// unbounded, deleting is not trivial. See the docs for more details:
-// https://firebase.google.com/docs/firestore/solutions/delete-collections
-exports.deleteScores = functions.https.onRequest(async (req, res) => {
-  cors(req, res, () => {
-    const firestore = admin.firestore();
-    const collection = firestore.collection("scores");
-    collection.limit(1000).get().then((querySnapshot) => {
-      if (querySnapshot.empty) {
-        return [];
-      }
-      const bulkWriter = firestore.bulkWriter();
-      const writes = querySnapshot.docs.map((doc) => collection.doc(doc.id))
-          .map((ref) => bulkWriter.delete(ref))
-          .concat(bulkWriter.close());
-      return Promise.all(writes);
-    }).then((results) => {
-      res.json({
-        result: "Executed deletes",
-        deletes: results,
-      });
-    });
-  });
-});
-
 // Adds 10 random scores.
 exports.addScores = functions.https.onRequest(async (req, res) => {
   cors(req, res, () => {
