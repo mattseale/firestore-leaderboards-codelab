@@ -20,6 +20,7 @@ const cors = require("cors")({
   // See the documentation for more details:
   // https://firebase.google.com/docs/functions/beta/http-events
   origin: true,
+  
 });
 
 const functions = require("firebase-functions");
@@ -27,6 +28,28 @@ const admin = require("firebase-admin");
 const helpers = require("./functions-helpers.js");
 const utils = require("./utils.js");
 admin.initializeApp();
+
+
+exports.scheduledFunctionCrontab = functions.pubsub.schedule("0 2 * * *")
+    // Schedule this when most of your users are offline to avoid
+    // database spikiness.
+    .timeZone("America/Los_Angeles")
+    .onRun((context) => {
+      const scores = admin.firestore().collection("scores");
+      scores.orderBy("score", "desc").get().then((snapshot) => {
+        let rank = 1;
+        const writes = [];
+        for (const docSnapshot of snapshot.docs) {
+          const docReference = scores.doc(docSnapshot.id);
+          writes.push(docReference.set({rank: rank}, admin.firestore.SetOptions.merge()));
+          rank++;
+        }
+        Promise.all(writes).then((result) => {
+          console.log(`Writes completed with results: ${result}`);
+        });
+      });
+      return null;
+    });
 
 // Adds 10 random scores.
 exports.addScores = functions.https.onRequest(async (req, res) => {
